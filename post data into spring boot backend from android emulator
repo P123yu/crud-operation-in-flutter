@@ -220,3 +220,7 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.14.0  # or the latest version
+
+
+
+When running your Flutter application on a real device, the local development server URL (http://10.0.2.2:8080) won't work because 10.0.2.2 is an alias for localhost or 127.0.0.1 in the context of the Android Emulator. For real devices, you need to use the IP address of your development machine on the local network.
