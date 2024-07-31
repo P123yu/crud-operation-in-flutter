@@ -1,0 +1,222 @@
+
+// lib/model/user.dart
+
+class User {
+  final String userName;
+  final String email;
+  final String password;
+
+  User({
+    required this.userName,
+    required this.email,
+    required this.password,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'userName': userName,
+    'email': email,
+    'password': password,
+  };
+}
+
+
+==============================================================================================================================================
+
+
+// lib/service/api_service.dart
+
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../model/user.dart';
+
+class ApiService {
+  final String apiUrl = "http://10.0.2.2:8080/api/postUser"; // URL for the API endpoint
+
+  Future<void> insert(User user) async {
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(user.toJson()),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to insert data: ${response.statusCode}');
+    }
+  }
+}
+
+
+
+==================================================================================================================================================
+
+
+// lib/pages/register_screen.dart
+
+import 'package:flutter/material.dart';
+import '../model/user.dart';
+import '../service/service.dart'; // Ensure this imports the correct service class
+
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  // Initialize ApiService
+  final ApiService apiService = ApiService();
+
+  Future<void> _register() async {
+    final user = User(
+      userName: nameController.text,
+      email: emailController.text,
+      password: passwordController.text,
+    );
+
+    // Print user data to the console
+    print('User Data:');
+    print('Username: ${user.userName}');
+    print('Email: ${user.email}');
+    print('Password: ${user.password}'); // Avoid printing sensitive data in production
+
+    try {
+      await apiService.insert(user);
+
+      // Only show the SnackBar if the widget is still mounted
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Data inserted")),
+        );
+      }
+    } catch (e, stackTrace) {
+      print('Exception occurred: $e');
+      print('Stack trace: $stackTrace');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.toString()}")),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black87,
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const SizedBox(height: 30),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white12, // Added background color for better visibility
+              ),
+              child: TextField(
+                controller: nameController,
+                style: const TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.2,
+                ),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.person, color: Colors.white),
+                  labelText: "Username",
+                  labelStyle: TextStyle(
+                    color: Colors.white,
+                  ),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white12, // Added background color for better visibility
+              ),
+              child: TextField(
+                controller: emailController,
+                style: const TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.2,
+                ),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.email, color: Colors.white),
+                  labelText: "Email",
+                  labelStyle: TextStyle(
+                    color: Colors.white,
+                  ),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white12, // Added background color for better visibility
+              ),
+              child: TextField(
+                controller: passwordController,
+                obscureText: true,
+                style: const TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.2,
+                ),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.lock, color: Colors.white),
+                  labelText: "Password",
+                  labelStyle: TextStyle(
+                    color: Colors.white,
+                  ),
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.visibility_off, color: Colors.white),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              height: 60,
+              width: MediaQuery.of(context).size.width * .9,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.deepPurple,
+              ),
+              child: TextButton(
+                onPressed: _register, // Use the new method
+                child: const Text(
+                  "Register", // Changed text to "Register" for clarity
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
+=======================================================================================================================================================
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^0.14.0  # or the latest version
